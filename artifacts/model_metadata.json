@@ -1,0 +1,44 @@
+{
+  "selected_model": "Random forest",
+  "selection_metric": "mean macro F1 over repeated stratified cross-validation",
+  "random_state": 42,
+  "rows": 480,
+  "train_rows": 384,
+  "test_rows": 96,
+  "features_used": [
+    "raisedhands",
+    "VisITedResources",
+    "AnnouncementsView",
+    "Discussion",
+    "StageID",
+    "GradeID",
+    "SectionID",
+    "Topic",
+    "Semester",
+    "Relation",
+    "ParentAnsweringSurvey",
+    "ParentschoolSatisfaction",
+    "StudentAbsenceDays"
+  ],
+  "audit_only_fields": [
+    "gender",
+    "NationalITy",
+    "PlaceofBirth"
+  ],
+  "class_order": [
+    "L",
+    "M",
+    "H"
+  ],
+  "holdout_accuracy": 0.7395833333333334,
+  "holdout_balanced_accuracy": 0.7479802955665025,
+  "holdout_macro_f1": 0.7492122463020295,
+  "holdout_weighted_f1": 0.739561833505332,
+  "holdout_multiclass_brier_score": 0.36023483443966126,
+  "majority_baseline_accuracy": 0.4375,
+  "probabilities_calibrated": true,
+  "calibration_method": "sigmoid calibration using training folds",
+  "data_source_rows": 480,
+  "pipeline_file": "model.joblib",
+  "model_score_note": "Sigmoid-calibrated scores; small holdout means calibration remains uncertain."
+}

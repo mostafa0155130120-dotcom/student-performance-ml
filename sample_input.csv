@@ -1,0 +1,2 @@
+StageID,GradeID,SectionID,Topic,Semester,Relation,ParentAnsweringSurvey,ParentschoolSatisfaction,StudentAbsenceDays,raisedhands,VisITedResources,AnnouncementsView,Discussion
+MiddleSchool,G-07,A,Math,F,Father,Yes,Good,Under-7,35,45,20,40
