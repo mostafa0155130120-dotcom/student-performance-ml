@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import html
 from pathlib import Path
 
 import joblib
@@ -197,30 +198,49 @@ def get_category_options(data: pd.DataFrame, column: str) -> list[str]:
 
 
 def set_text_direction(language: str) -> None:
-    if language == "ar":
-        css = """
-        <style>
-        [data-testid="stAppViewContainer"] { direction: rtl; text-align: right; }
-        [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"],
-        [data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
-        [data-testid="stAppViewContainer"] [data-testid="stTabs"] { direction: rtl; text-align: right; }
-        [data-testid="stAppViewContainer"] input,
-        [data-testid="stAppViewContainer"] textarea { direction: rtl; text-align: right; }
-        [data-testid="stAppViewContainer"] button { direction: rtl; }
-        </style>
-        """
-    else:
-        css = """
-        <style>
-        [data-testid="stAppViewContainer"] { direction: ltr; text-align: left; }
-        [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"],
-        [data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
-        [data-testid="stAppViewContainer"] [data-testid="stTabs"] { direction: ltr; text-align: left; }
-        [data-testid="stAppViewContainer"] input,
-        [data-testid="stAppViewContainer"] textarea { direction: ltr; text-align: left; }
-        [data-testid="stAppViewContainer"] button { direction: ltr; }
-        </style>
-        """
+    direction = "rtl" if language == "ar" else "ltr"
+    alignment = "right" if language == "ar" else "left"
+    css = f"""
+    <style>
+    [data-testid="stAppViewContainer"] {{ direction: {direction}; text-align: {alignment}; }}
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"],
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] > *,
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] :is(h1,h2,h3,h4,p,ul,ol,li,blockquote),
+    [data-testid="stAppViewContainer"] [data-testid="stWidgetLabel"],
+    [data-testid="stAppViewContainer"] [data-testid="stTabs"],
+    [data-testid="stAppViewContainer"] [role="tablist"],
+    [data-testid="stAppViewContainer"] [role="tab"] {{
+        direction: {direction} !important;
+        text-align: {alignment} !important;
+    }}
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] ul,
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] ol {{
+        padding-inline-start: 1.5rem !important;
+        padding-inline-end: 0 !important;
+        list-style-position: outside !important;
+    }}
+    [data-testid="stAppViewContainer"] [data-testid="stMarkdownContainer"] li {{
+        display: list-item !important;
+        unicode-bidi: plaintext;
+    }}
+    [data-testid="stAppViewContainer"] input,
+    [data-testid="stAppViewContainer"] textarea {{ direction: {direction}; text-align: {alignment}; }}
+    [data-testid="stAppViewContainer"] button {{ direction: {direction}; }}
+    .model-meta-row {{
+        display: flex;
+        align-items: flex-start;
+        gap: .45rem;
+        width: 100%;
+        margin: .45rem 0;
+    }}
+    .model-meta-row[dir="rtl"] {{ direction: rtl; text-align: right; }}
+    .model-meta-row[dir="ltr"] {{ direction: ltr; text-align: left; }}
+    .model-meta-bullet {{ flex: 0 0 auto; }}
+    .model-meta-copy {{ flex: 1 1 auto; min-width: 0; }}
+    .model-meta-row[dir="rtl"] .model-meta-copy {{ direction: rtl; text-align: right; }}
+    .model-meta-row[dir="ltr"] .model-meta-copy {{ direction: ltr; text-align: left; }}
+    </style>
+    """
     st.markdown(css, unsafe_allow_html=True)
 
 
@@ -357,9 +377,23 @@ def show_model_card(metadata: dict, language: str) -> None:
     st.subheader(text["model_title"])
     st.write(text["model_intro"])
     if metadata:
-        st.markdown(f"- **{text['selected_model']}:** {metadata.get('selected_model', 'N/A')}")
-        st.markdown(f"- **{text['holdout_f1']}:** {metadata.get('holdout_macro_f1', 0):.3f}")
-        st.markdown(f"- **{text['rows']}:** {metadata.get('rows', 'N/A')}")
+        direction = "rtl" if language == "ar" else "ltr"
+        selected_model = html.escape(str(metadata.get("selected_model", "N/A")))
+        holdout_f1 = float(metadata.get("holdout_macro_f1", 0))
+        rows = html.escape(str(metadata.get("rows", "N/A")))
+        metric_rows = [
+            (text["selected_model"], selected_model),
+            (text["holdout_f1"], f"{holdout_f1:.3f}"),
+            (text["rows"], rows),
+        ]
+        for label, value in metric_rows:
+            st.markdown(
+                f'<div class="model-meta-row" dir="{direction}">'
+                f'<span class="model-meta-bullet" aria-hidden="true">•</span>'
+                f'<span class="model-meta-copy"><strong>{html.escape(label)}:</strong> '
+                f'{value}</span></div>',
+                unsafe_allow_html=True,
+            )
     st.warning(text["model_caution"])
     audit_path = ARTIFACT_DIR / "gender_audit.csv"
     if audit_path.exists():
