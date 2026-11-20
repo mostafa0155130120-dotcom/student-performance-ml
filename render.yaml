@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: student-performance-support
-    runtime: docker
-    plan: free
-    healthCheckPath: /_stcore/health
